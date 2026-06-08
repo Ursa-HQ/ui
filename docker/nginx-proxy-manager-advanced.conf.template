@@ -1,0 +1,176 @@
+# ------------------------------------------------------------
+# your-domain.example.com — UrsaHQ Launcher + Subpath Routing
+# ------------------------------------------------------------
+# WARNING: This file was manually created/edited to add subpath routing.
+# If nginx-proxy-manager regenerates it, re-apply from:
+# /path/to/ursahq-ui/docker/nginx/nginx-proxy-manager-advanced.conf.template
+
+map $scheme $hsts_header {
+    https   "max-age=63072000; preload";
+}
+
+server {
+  set $forward_scheme http;
+  set $server         "launcher";
+  set $port           80;
+
+  listen 80;
+listen [::]:80;
+
+listen 443 ssl;
+listen [::]:443 ssl;
+
+
+  server_name your-domain.example.com;
+
+  http2 on;
+
+
+  # Let's Encrypt SSL
+  include conf.d/include/letsencrypt-acme-challenge.conf;
+  include conf.d/include/ssl-cache.conf;
+  include conf.d/include/ssl-ciphers.conf;
+  ssl_certificate /etc/letsencrypt/live/npm-5/fullchain.pem;
+  ssl_certificate_key /etc/letsencrypt/live/npm-5/privkey.pem;
+
+
+
+
+  # Block Exploits
+  include conf.d/include/block-exploits.conf;
+
+
+
+
+    # Force SSL
+    include conf.d/include/force-ssl.conf;
+
+
+
+proxy_set_header Upgrade $http_upgrade;
+proxy_set_header Connection $http_connection;
+proxy_http_version 1.1;
+
+
+  access_log /data/logs/proxy-host-5_access.log proxy;
+  error_log /data/logs/proxy-host-5_error.log warn;
+
+# Strip X-Frame-Options so services can be navigated-to in same tab
+proxy_hide_header X-Frame-Options;
+
+# Relaxed CSP for the launcher — allows loading service UIs
+add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https:; frame-ancestors 'self' *;";
+
+
+
+  # Root — serves the Flutter launcher SPA
+  location / {
+
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection $http_connection;
+    proxy_http_version 1.1;
+
+    # Proxy to launcher container
+    include conf.d/include/proxy.conf;
+  }
+
+  # ── Subpath Routing ────────────────────────────────────────
+  # Each subpath proxies to the correct internal container.
+  # X-Frame-Options is already stripped at the server level above.
+
+  # Jellyfin
+  location /jellyfin/ {
+    proxy_pass http://jellyfin:8096/jellyfin/;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection $http_connection;
+    proxy_http_version 1.1;
+  }
+
+  # Grafana
+  location /grafana/ {
+    proxy_pass http://grafana:3000/grafana/;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+  }
+
+  # AdGuard Home
+  location /adguard/ {
+    proxy_pass http://adguardhome:80/adguard/;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection $http_connection;
+    proxy_http_version 1.1;
+  }
+
+  # Dozzle
+  location /dozzle/ {
+    proxy_pass http://dozzle:8080/;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection $http_connection;
+    proxy_http_version 1.1;
+  }
+
+  # Portainer
+  location /portainer/ {
+    proxy_pass http://portainer:9000/;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection $http_connection;
+    proxy_http_version 1.1;
+  }
+
+  # MT5 Bridge (deep UI TBD)
+  location /mt5-bridge/ {
+    proxy_pass http://mt5-bridge-ui:80/;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+  }
+
+  # Trading Engine (deep UI TBD)
+  location /trading/ {
+    proxy_pass http://trading-ui:80/;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+  }
+
+  # Subtitle Gen (deep UI TBD)
+  location /subgen/ {
+    proxy_pass http://subgen-ui:80/;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+  }
+
+  # Forge Admin (deep UI TBD)
+  location /forge-admin/ {
+    proxy_pass http://forge-admin-ui:80/;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+  }
+
+  # Custom
+  include /data/nginx/custom/server_proxy[.]conf;
+}

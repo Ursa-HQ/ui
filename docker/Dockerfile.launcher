@@ -1,0 +1,23 @@
+# UrsaHQ Launcher Container
+# Pre-built Flutter web app served by nginx with subpath routing.
+#
+# Build:
+#   cd /path/to/ursahq-ui
+#   flutter build web  # from apps/launcher/
+#   docker build --build-arg NUC_HOST=nuc-hostname-or-ip \
+#     -f docker/Dockerfile.launcher -t ursahq-launcher .
+#
+# Run:
+#   docker run -d --name launcher --network media_network ursahq-launcher
+
+FROM nginx:alpine
+
+ARG NUC_HOST=nuc-host.local
+
+COPY apps/launcher/build/web /usr/share/nginx/html
+COPY docker/launcher-nginx.conf /etc/nginx/conf.d/default.conf
+
+# Inject the NUC hostname/IP into the nginx config
+RUN sed -i "s/nuc-host.local/$NUC_HOST/g" /etc/nginx/conf.d/default.conf
+
+EXPOSE 80

@@ -1,0 +1,22 @@
+name: ursahq_launcher
+description: UrsaHQ Home Server Launcher — single-tab shell for all services.
+publish_to: none
+
+version: 0.1.0
+
+environment:
+  sdk: ^3.7.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  ursahq_design_system:
+    path: ../../packages/ursahq_design_system
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
