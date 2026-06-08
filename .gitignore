@@ -1,0 +1,33 @@
+# ── Dart / Flutter ──────────────────────────────────────
+.dart_tool/
+.packages
+.pub/
+build/
+*.pub-cache*
+.pub-cache*
+
+# ── IDE / Editor ─────────────────────────────────────────
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# ── Environment ─────────────────────────────────────────
+.env
+*.env.local
+
+# ── OS ───────────────────────────────────────────────────
+Thumbs.db
+Desktop.ini
+
+# ── Platform stubs (not needed for Flutter web only) ─────
+apps/*/android/
+apps/*/ios/
+apps/*/macos/
+apps/*/windows/
+apps/*/linux/
+
+# ── Sensitive infra (local configs, not for public repo) ──
+docker/nginx/

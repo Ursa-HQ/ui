@@ -39,7 +39,7 @@ flutter build web
 
 | Repo | Path | Purpose |
 |------|------|---------|
-| ursahq-infra | /mnt/fast/ursahq-infra | Nginx config, Docker backbone |
-| ursahq-sites | /mnt/fast/ursahq-sites | UrsaClimb + brochure sites |
-| ursahq-trading | /mnt/fast/ursahq-trading | Trading engine, MT5 |
-| ursahq-open | /mnt/fast/ursahq-open | Public Rust crates |
+| ursahq-infra | ../ursahq-infra | Nginx config, Docker backbone |
+| ursahq-sites | ../ursahq-sites | UrsaClimb + brochure sites |
+| ursahq-trading | ../ursahq-trading | Trading engine, MT5 |
+| ursahq-open | ../ursahq-open | Public Rust crates |

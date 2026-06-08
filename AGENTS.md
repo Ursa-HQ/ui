@@ -7,10 +7,10 @@
 
 | Repo | Path | Purpose |
 |------|------|---------|
-| ursahq-infra | /mnt/fast/ursahq-infra | Docker backbone, nginx proxy configs |
-| ursahq-trading | /mnt/fast/ursahq-trading | Trading engine, MT5 bridge |
-| ursahq-sites | /mnt/fast/ursahq-sites | UrsaClimb SaaS + brochure sites |
-| ursahq-ml | /mnt/fast/ursahq-ml | ML training, corpus pipeline |
+| ursahq-infra | ../ursahq-infra | Docker backbone, nginx proxy configs |
+| ursahq-trading | ../ursahq-trading | Trading engine, MT5 bridge |
+| ursahq-sites | ../ursahq-sites | UrsaClimb SaaS + brochure sites |
+| ursahq-ml | ../ursahq-ml | ML training, corpus pipeline |
 
 ## Structure
 
