@@ -4,8 +4,9 @@
 /// [HtmlElementView]. A single iframe element is reused across all
 /// service navigations — only the `src` attribute is updated.
 ///
-/// This keeps the UrsaHQ shell (sidebar + chrome) persistently visible
-/// around the embedded service.
+/// Supports cross-origin parent→child messaging:
+/// When [season] changes, a `postMessage({'ursaSeason': ...})` is sent
+/// to the iframe so child SPAs (wiki, trading) can sync their theme.
 library;
 
 import 'dart:html' as html;
@@ -61,6 +62,9 @@ void _ensureIframeRegistered() {
 ///
 /// The [url] is loaded into a shared iframe element. When the URL changes,
 /// the `src` attribute is updated without recreating the DOM element.
+///
+/// When [season] changes, a `postMessage` is sent to the iframe so child
+/// Flutter SPAs (wiki, trading) can update their seasonal theme.
 class IframeContent extends StatefulWidget {
   /// The URL to load in the iframe.
   final String url;
@@ -68,10 +72,18 @@ class IframeContent extends StatefulWidget {
   /// Optional label for error/loading states.
   final String? label;
 
+  /// Current UrsaHQ season — sent to the iframe via postMessage.
+  ///
+  /// When this changes, the iframe's content window receives
+  /// `{'ursaSeason': 'winter'}` so child Flutter apps can rebuild
+  /// their theme without a full reload.
+  final Season? season;
+
   const IframeContent({
     super.key,
     required this.url,
     this.label,
+    this.season,
   });
 
   @override
@@ -94,6 +106,21 @@ class _IframeContentState extends State<IframeContent> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.url != widget.url) {
       _loadUrl(widget.url);
+    } else if (oldWidget.season != widget.season) {
+      _sendSeasonToIframe();
+    }
+  }
+
+  /// Sends the current [widget.season] to the iframe via postMessage.
+  ///
+  /// The child Flutter app (wiki, trading, etc.) should listen for
+  /// `window.addEventListener('message', ...)` and apply the season.
+  void _sendSeasonToIframe() {
+    if (_iframeElement != null && widget.season != null) {
+      _iframeElement!.contentWindow?.postMessage(
+        {'ursaSeason': widget.season!.name},
+        '*',
+      );
     }
   }
 
@@ -105,6 +132,7 @@ class _IframeContentState extends State<IframeContent> {
 
     // Set callbacks BEFORE setting src so we never miss the load event
     _onIframeLoad = () {
+      _sendSeasonToIframe();
       if (mounted) setState(() => _isLoading = false);
     };
     _onIframeError = () {

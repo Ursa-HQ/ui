@@ -1,22 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:ursahq_design_system/ursahq_design_system.dart';
+import 'package:ursahq_app_base/ursahq_app_base.dart';
+
 import 'pages/dashboard_page.dart';
 
-void main() {
-  runApp(const TradingDashboardApp());
-}
-
-class TradingDashboardApp extends StatelessWidget {
-  const TradingDashboardApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'UrsaHQ Trading',
-      themeMode: ThemeMode.dark,
-      debugShowCheckedModeBanner: false,
-      darkTheme: UrsaTheme.dark(),
-      home: const DashboardPage(),
-    );
-  }
-}
+void main() => runApp(const UrsaApp(
+  title: 'UrsaHQ Trading',
+  home: DashboardPage(),
+));

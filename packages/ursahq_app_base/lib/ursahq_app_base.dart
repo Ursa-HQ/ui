@@ -12,3 +12,4 @@
 library ursahq_app_base;
 
 export 'src/ursa_app.dart';
+export 'src/season_aware_app.dart';

@@ -43,6 +43,7 @@ class _UrsaLauncherAppState extends State<UrsaLauncherApp> {
       theme: UrsaTheme.dark(season: _season),
       home: LauncherShell(
         onSeasonChanged: (season) => setState(() => _season = season),
+        season: _season,
       ),
     );
   }
@@ -54,8 +55,9 @@ class _UrsaLauncherAppState extends State<UrsaLauncherApp> {
 /// and sidebar collapse state persisted to localStorage.
 class LauncherShell extends StatefulWidget {
   final ValueChanged<Season>? onSeasonChanged;
+  final Season season;
 
-  const LauncherShell({super.key, this.onSeasonChanged});
+  const LauncherShell({super.key, this.onSeasonChanged, required this.season});
 
   @override
   State<LauncherShell> createState() => _LauncherShellState();
@@ -199,6 +201,7 @@ class _LauncherShellState extends State<LauncherShell> {
               sidebarCollapsed: _isSidebarCollapsed,
               onNavigate: _navigateTo,
               statusOverrides: _statusOverrides,
+              season: widget.season,
             ),
           ),
         ],

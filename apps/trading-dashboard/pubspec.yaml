@@ -14,6 +14,13 @@ dependencies:
   ursahq_design_system:
     path: ../../packages/ursahq_design_system
 
+  ursahq_app_base:
+    path: ../../packages/ursahq_app_base
+
+dependency_overrides:
+  ursahq_design_system:
+    path: ../../packages/ursahq_design_system
+
 dev_dependencies:
   flutter_lints: ^5.0.0
 

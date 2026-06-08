@@ -6,9 +6,13 @@
 /// - `debugShowCheckedModeBanner: false` — clean UI
 /// - `FlutterError.onError` handler — logs to console
 ///
-/// Two constructors:
+/// Two public constructors:
 /// - `UrsaApp(home:)` — for apps using standard Navigator
 /// - `UrsaApp.router(routerConfig:)` — for apps using GoRouter
+///
+/// Internal:
+/// - `UrsaApp._withSeason(...)` — used by [SeasonAwareApp] to pass a
+///   dynamically-received season instead of auto-detecting.
 
 library;
 
@@ -41,13 +45,18 @@ class UrsaApp extends StatelessWidget {
   /// Optional theme modifier.
   final ThemeData Function(ThemeData base)? themeBuilder;
 
+  /// Season override — when set, used instead of [getCurrentSeason()].
+  /// Used internally by [SeasonAwareApp] after receiving a postMessage.
+  final Season? season;
+
   /// Standard Navigator routing.
   const UrsaApp({
     super.key,
     this.title = 'UrsaHQ',
     required this.home,
     this.themeBuilder,
-  }) : routerConfig = null;
+  }) : routerConfig = null,
+       season = null;
 
   /// GoRouter-based routing.
   const UrsaApp.router({
@@ -56,7 +65,19 @@ class UrsaApp extends StatelessWidget {
     required GoRouter routerConfig,
     this.themeBuilder,
   }) : home = null,
-       routerConfig = routerConfig;
+       routerConfig = routerConfig,
+       season = null;
+
+  /// Internal: accepts an explicit [season] instead of auto-detecting.
+  /// Used by [SeasonAwareApp] for cross-frame season sync.
+  const UrsaApp._withSeason({
+    super.key,
+    this.title = 'UrsaHQ',
+    this.home,
+    this.routerConfig,
+    this.themeBuilder,
+    required this.season,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -66,8 +87,8 @@ class UrsaApp extends StatelessWidget {
       print('[UrsaApp] ERROR: ${details.exception}');
     };
 
-    final season = getCurrentSeason();
-    var theme = UrsaTheme.dark(season: season);
+    final effectiveSeason = season ?? getCurrentSeason();
+    var theme = UrsaTheme.dark(season: effectiveSeason);
     final tb = themeBuilder;
     if (tb != null) {
       theme = tb(theme);

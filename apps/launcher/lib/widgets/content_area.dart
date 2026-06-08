@@ -46,6 +46,9 @@ class ContentArea extends StatelessWidget {
   /// Live status overrides from health checks.
   final Map<String, ServiceStatus>? statusOverrides;
 
+  /// Current season — forwarded to [IframeContent] for postMessage sync.
+  final Season? season;
+
   const ContentArea({
     super.key,
     required this.activeService,
@@ -54,6 +57,7 @@ class ContentArea extends StatelessWidget {
     this.sidebarCollapsed = false,
     required this.onNavigate,
     this.statusOverrides,
+    this.season,
   });
 
   ContentState get _state {
@@ -82,6 +86,7 @@ class ContentArea extends StatelessWidget {
         return IframeContent(
           url: activeService!.proxyPath ?? activeService!.path,
           label: activeService!.label,
+          season: season,
         );
 
       case ContentState.native:
