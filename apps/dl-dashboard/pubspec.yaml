@@ -1,0 +1,21 @@
+name: dl_dashboard
+description: UrsaHQ Dukascopy data downloader — live progress, verification reports.
+publish_to: none
+version: 0.1.0
+
+environment:
+  sdk: ^3.7.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+  http: ^1.2.0
+  flutter_svg: ^2.0.0
+  ursahq_design_system:
+    path: ../../packages/ursahq_design_system
+
+dev_dependencies:
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
