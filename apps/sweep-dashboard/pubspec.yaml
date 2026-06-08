@@ -1,0 +1,19 @@
+name: sweep_dashboard
+description: UrsaHQ sweep pairs dashboard — live progress, signal results, aggregate stats.
+publish_to: none
+version: 0.1.0
+
+environment:
+  sdk: ^3.7.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+  ursahq_design_system:
+    path: ../../packages/ursahq_design_system
+
+dev_dependencies:
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
