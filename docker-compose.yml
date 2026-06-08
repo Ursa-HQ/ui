@@ -1,0 +1,36 @@
+# UrsaHQ UI — Docker Compose
+#
+# Run the launcher portal and optional deep UI backends.
+#
+# Prerequisites:
+#   - A Flutter web build in apps/<name>/build/web/
+#   - Docker and docker compose installed
+#
+# Quick start:
+#   cd apps/launcher && flutter build web --release && cd ../..
+#   docker compose up -d launcher
+#
+# You'll also need to configure nginx-proxy-manager or similar
+# to route your domain to launcher:80 (see docker/launcher-nginx.conf).
+
+networks:
+  media_network:
+    name: homeserver_media_network
+    external: true
+
+services:
+  # ── Launcher ─── UrsaHQ portal shell ────────────────────
+  launcher:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.launcher
+      args:
+        # Replace with the IP/hostname of your secondary machine
+        # running *arr services, or omit if all on one host.
+        NUC_HOST: nuc-host.local
+    container_name: launcher
+    restart: unless-stopped
+    ports:
+      - "3006:80"
+    networks:
+      - media_network
