@@ -21,7 +21,7 @@
 
 library;
 
-import 'dart:html' show window, MessageEvent;
+import 'dart:html' show window, Event, MessageEvent;
 
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
@@ -80,8 +80,8 @@ class _SeasonAwareAppState extends State<SeasonAwareApp> {
     }
   }
 
-  void _handleMessage(MessageEvent event) {
-    if (event.data is Map && (event.data as Map)['ursaSeason'] is String) {
+  void _handleMessage(Event event) {
+    if (event is MessageEvent && event.data is Map && (event.data as Map)['ursaSeason'] is String) {
       final name = (event.data as Map)['ursaSeason'] as String;
       final season = Season.values.firstWhere(
         (s) => s.name == name,
