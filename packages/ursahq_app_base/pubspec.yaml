@@ -1,0 +1,25 @@
+name: ursahq_app_base
+description: UrsaHQ App Base — wraps MaterialApp/MaterialApp.router with seasonal dark theme, path URL strategy, and error boundary. One import, done.
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ^3.7.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_web_plugins:
+    sdk: flutter
+
+  ursahq_design_system:
+    git:
+      url: https://github.com/Ursa-HQ/ui.git
+      path: packages/ursahq_design_system
+      ref: master
+
+  go_router: ^14.8.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
