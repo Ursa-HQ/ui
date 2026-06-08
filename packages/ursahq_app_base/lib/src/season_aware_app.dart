@@ -103,7 +103,7 @@ class _SeasonAwareAppState extends State<SeasonAwareApp> {
 
   @override
   Widget build(BuildContext context) {
-    return UrsaApp._withSeason(
+    return UrsaApp.withSeason(
       title: widget.title,
       home: widget.home,
       routerConfig: widget.routerConfig,

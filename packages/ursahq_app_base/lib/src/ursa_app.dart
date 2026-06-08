@@ -11,7 +11,7 @@
 /// - `UrsaApp.router(routerConfig:)` — for apps using GoRouter
 ///
 /// Internal:
-/// - `UrsaApp._withSeason(...)` — used by [SeasonAwareApp] to pass a
+/// - `UrsaApp.withSeason(...)` — used by [SeasonAwareApp] to pass a
 ///   dynamically-received season instead of auto-detecting.
 
 library;
@@ -70,7 +70,7 @@ class UrsaApp extends StatelessWidget {
 
   /// Internal: accepts an explicit [season] instead of auto-detecting.
   /// Used by [SeasonAwareApp] for cross-frame season sync.
-  const UrsaApp._withSeason({
+  const UrsaApp.withSeason({
     super.key,
     this.title = 'UrsaHQ',
     this.home,
