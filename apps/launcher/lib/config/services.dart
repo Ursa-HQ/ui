@@ -291,4 +291,17 @@ List<ServiceEntry> get launcherServices => [
     type: ServiceType.thirdParty,
     category: ServiceCategory.trading,
   ),
+
+  // ═══════════════════════════════════════════════════════
+  // MONITORING
+  // ═══════════════════════════════════════════════════════
+  const ServiceEntry(
+    id: 'fleet',
+    label: 'Fleet Dashboard',
+    path: '/fleet/',
+    proxyPath: '/_p/fleet/',
+    status: ServiceStatus.up,
+    type: ServiceType.thirdParty,
+    category: ServiceCategory.monitoring,
+  ),
 ];
