@@ -194,19 +194,6 @@ List<ServiceEntry> get launcherServices => [
   ),
 
   // ═══════════════════════════════════════════════════════
-  // AI & TOOLS
-  // ═══════════════════════════════════════════════════════
-  const ServiceEntry(
-    id: 'open-webui',
-    label: 'Open WebUI',
-    path: '/open-webui/',
-    proxyPath: '/_p/open-webui/',
-    status: ServiceStatus.unknown,
-    type: ServiceType.thirdParty,
-    category: ServiceCategory.ai,
-  ),
-
-  // ═══════════════════════════════════════════════════════
   // DOCUMENTATION & STORAGE
   // ═══════════════════════════════════════════════════════
   const ServiceEntry(
@@ -227,15 +214,7 @@ List<ServiceEntry> get launcherServices => [
     type: ServiceType.thirdParty,
     category: ServiceCategory.storage,
   ),
-  const ServiceEntry(
-    id: 'couchdb',
-    label: 'CouchDB',
-    path: '/couchdb/',
-    proxyPath: 'https://couchdb.mg3.net/',
-    status: ServiceStatus.unknown,
-    type: ServiceType.thirdParty,
-    category: ServiceCategory.storage,
-  ),
+  // DOCUMENTATION & STORAGE
   const ServiceEntry(
     id: 'minio',
     label: 'MinIO Console',
@@ -263,16 +242,6 @@ List<ServiceEntry> get launcherServices => [
   // GAMING
   // ═══════════════════════════════════════════════════════
   const ServiceEntry(
-    id: 'monifactory',
-    label: 'Monifactory',
-    path: '/monifactory/',
-    externalUrl: 'https://moni.mg3.net',
-    proxyPath: 'https://moni.mg3.net/',
-    status: ServiceStatus.unknown,
-    type: ServiceType.thirdParty,
-    category: ServiceCategory.gaming,
-  ),
-  const ServiceEntry(
     id: 'forge-servers',
     label: 'Minecraft Forge',
     path: '/forge-servers/',
@@ -282,28 +251,9 @@ List<ServiceEntry> get launcherServices => [
     type: ServiceType.thirdParty,
     category: ServiceCategory.gaming,
   ),
-  const ServiceEntry(
-    id: 'homepage-legacy',
-    label: 'Homepage (Legacy)',
-    path: '/homepage/',
-    proxyPath: '/_p/homepage/',
-    status: ServiceStatus.unknown,
-    type: ServiceType.thirdParty,
-    category: ServiceCategory.gaming,
-  ),
-
   // ═══════════════════════════════════════════════════════
   // TRADING
   // ═══════════════════════════════════════════════════════
-  const ServiceEntry(
-    id: 'mt5-bridge',
-    label: 'MT5 Bridge',
-    path: '/mt5-bridge/',
-    proxyPath: '/_p/mt5-bridge/',
-    status: ServiceStatus.unknown,
-    type: ServiceType.thirdParty,
-    category: ServiceCategory.trading,
-  ),
   const ServiceEntry(
     id: 'trading',
     label: 'Trading Engine',
@@ -331,15 +281,7 @@ List<ServiceEntry> get launcherServices => [
     type: ServiceType.thirdParty,
     category: ServiceCategory.trading,
   ),
-  const ServiceEntry(
-    id: 'subgen',
-    label: 'Subtitle Gen',
-    path: '/subgen/',
-    proxyPath: '/_p/subgen/',
-    status: ServiceStatus.unknown,
-    type: ServiceType.thirdParty,
-    category: ServiceCategory.trading,
-  ),
+
   const ServiceEntry(
     id: 'forge-admin',
     label: 'Forge Admin',
