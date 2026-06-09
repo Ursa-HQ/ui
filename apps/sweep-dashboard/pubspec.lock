@@ -123,6 +123,13 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.4.0"
+  ursahq_design_system:
+    dependency: "direct main"
+    description:
+      path: "../../packages/ursahq_design_system"
+      relative: true
+    source: path
+    version: "0.1.0"
   vector_math:
     dependency: transitive
     description:

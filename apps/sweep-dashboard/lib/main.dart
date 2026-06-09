@@ -3,7 +3,10 @@
 /// Views:
 /// - **Status card** — current signal, pair progress, elapsed time
 /// - **Signal list** — completed signals with expandable aggregate stats
-/// - **Auto-refresh** — polls /api/sweep/status every 5 seconds
+/// - **Auto-refresh** — polls API every 5 seconds
+///
+/// Uses Ursa design system for theming (season-aware, M3).
+/// API paths resolve relative to `<base href>` so proxying works.
 library;
 
 import 'dart:async';
@@ -11,6 +14,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:ursahq_design_system/ursahq_design_system.dart';
 
 void main() {
   runApp(const SweepDashboardApp());
@@ -23,10 +27,8 @@ class SweepDashboardApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Sweep Pairs',
-      theme: ThemeData.dark().copyWith(
-        scaffoldBackgroundColor: const Color(0xFF0D1117),
-        cardColor: const Color(0xFF161B22),
-      ),
+      darkTheme: UrsaTheme.dark(),
+      themeMode: ThemeMode.dark,
       home: const SweepDashboardPage(),
     );
   }
@@ -47,7 +49,9 @@ class _SweepDashboardPageState extends State<SweepDashboardPage> {
   String _errorMsg = '';
   Timer? _timer;
 
-  static const _apiBase = '/api/sweep';
+  /// Build API URI relative to the document base href.
+  /// Works correctly through launcher proxy (/_p/sweep/ → /api/sweep/...).
+  Uri _apiUri(String path) => Uri.base.resolve('api/sweep/$path');
 
   @override
   void initState() {
@@ -68,7 +72,7 @@ class _SweepDashboardPageState extends State<SweepDashboardPage> {
 
   Future<void> _fetchStatus() async {
     try {
-      final res = await http.get(Uri.parse('$_apiBase/status'));
+      final res = await http.get(_apiUri('status'));
       if (res.statusCode == 200) {
         setState(() {
           _status = SweepStatus.fromJson(jsonDecode(res.body));
@@ -87,7 +91,7 @@ class _SweepDashboardPageState extends State<SweepDashboardPage> {
 
   Future<void> _fetchSignals() async {
     try {
-      final res = await http.get(Uri.parse('$_apiBase/signals'));
+      final res = await http.get(_apiUri('signals'));
       if (res.statusCode == 200) {
         final list = List<String>.from(jsonDecode(res.body));
         setState(() => _signals = list);
@@ -98,7 +102,7 @@ class _SweepDashboardPageState extends State<SweepDashboardPage> {
   Future<void> _fetchSignalResult(String label) async {
     if (_signalResults.containsKey(label)) return;
     try {
-      final res = await http.get(Uri.parse('$_apiBase/results/$label'));
+      final res = await http.get(_apiUri('results/$label'));
       if (res.statusCode == 200) {
         setState(() => _signalResults[label] = jsonDecode(res.body));
       }
@@ -107,36 +111,37 @@ class _SweepDashboardPageState extends State<SweepDashboardPage> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<UrsaColors>()!;
     return Scaffold(
-      backgroundColor: const Color(0xFF0D1117),
+      backgroundColor: colors.backgroundCanvas,
       appBar: AppBar(
         title: const Text('Sweep Pairs'),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
         actions: [
           if (_status != null)
             Padding(
               padding: const EdgeInsets.only(right: 16),
-              child: StatusChip(isRunning: _status!.totalPairsCompleted < _status!.totalPairs),
+              child: StatusChip(
+                isRunning: _status!.totalPairsCompleted < _status!.totalPairs,
+              ),
             ),
         ],
       ),
-      body: _buildBody(),
+      body: _buildBody(colors),
     );
   }
 
-  Widget _buildBody() {
+  Widget _buildBody(UrsaColors colors) {
     if (_error) {
       return Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.cloud_off, color: Colors.redAccent, size: 48),
+            Icon(Icons.cloud_off, color: colors.accent11, size: 48),
             const SizedBox(height: 16),
             Text(
               'Sweep API unreachable\n$_errorMsg',
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.grey[400]),
+              style: TextStyle(color: colors.textLowContrast),
             ),
           ],
         ),
@@ -155,19 +160,18 @@ class _SweepDashboardPageState extends State<SweepDashboardPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            _buildStatusCard(),
+            _buildStatusCard(_status!, colors),
             const SizedBox(height: 24),
-            _buildMetricsRow(),
+            _buildMetricsRow(_status!, colors),
             const SizedBox(height: 24),
-            _buildSignalList(),
+            _buildSignalList(colors),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildStatusCard() {
-    final s = _status!;
+  Widget _buildStatusCard(SweepStatus s, UrsaColors colors) {
     final progress = s.totalPairs > 0
         ? s.pairsCompleted / s.totalPairs
         : s.totalSignals > 0
@@ -175,7 +179,7 @@ class _SweepDashboardPageState extends State<SweepDashboardPage> {
             : 0.0;
 
     return Card(
-      color: const Color(0xFF161B22),
+      color: colors.solidDefault,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(20),
@@ -184,7 +188,11 @@ class _SweepDashboardPageState extends State<SweepDashboardPage> {
           children: [
             Text(
               s.currentSignalLabel,
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: colors.textHighContrast,
+              ),
             ),
             const SizedBox(height: 12),
             ClipRRect(
@@ -192,8 +200,8 @@ class _SweepDashboardPageState extends State<SweepDashboardPage> {
               child: LinearProgressIndicator(
                 value: progress.clamp(0.0, 1.0),
                 minHeight: 12,
-                backgroundColor: const Color(0xFF21262D),
-                valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF58A6FF)),
+                backgroundColor: colors.borderSubtle,
+                valueColor: AlwaysStoppedAnimation<Color>(colors.accent9),
               ),
             ),
             const SizedBox(height: 8),
@@ -201,7 +209,7 @@ class _SweepDashboardPageState extends State<SweepDashboardPage> {
               'Signal ${s.currentSignalIdx + 1}/${s.totalSignals}  •  '
               'Pair ${s.pairsCompleted}/${s.totalPairs}  •  '
               '${s.totalPairsCompleted + s.totalPairsFailed} total',
-              style: TextStyle(color: Colors.grey[400], fontSize: 13),
+              style: TextStyle(color: colors.textLowContrast, fontSize: 13),
             ),
           ],
         ),
@@ -209,14 +217,13 @@ class _SweepDashboardPageState extends State<SweepDashboardPage> {
     );
   }
 
-  Widget _buildMetricsRow() {
-    final s = _status!;
+  Widget _buildMetricsRow(SweepStatus s, UrsaColors colors) {
     return Row(
       children: [
         _metricTile('Completed', '${s.totalPairsCompleted}', Colors.greenAccent),
         _metricTile('Failed', '${s.totalPairsFailed}', Colors.redAccent),
         _metricTile('Elapsed', _formatDuration(s.elapsedSecs), Colors.amberAccent),
-        _metricTile('Signals', '${s.totalSignals}', Colors.blueAccent),
+        _metricTile('Signals', '${s.totalSignals}', colors.accent9),
       ],
     );
   }
@@ -224,15 +231,22 @@ class _SweepDashboardPageState extends State<SweepDashboardPage> {
   Widget _metricTile(String label, String value, Color color) {
     return Expanded(
       child: Card(
-        color: const Color(0xFF161B22),
+        color: Theme.of(context).extension<UrsaColors>()!.solidDefault,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 14),
           child: Column(
             children: [
-              Text(value, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: color)),
+              Text(value,
+                  style: TextStyle(
+                      fontSize: 20, fontWeight: FontWeight.bold, color: color)),
               const SizedBox(height: 4),
-              Text(label, style: TextStyle(color: Colors.grey[500], fontSize: 11)),
+              Text(label,
+                  style: TextStyle(
+                      color: Theme.of(context)
+                          .extension<UrsaColors>()!
+                          .textLowContrast,
+                      fontSize: 11)),
             ],
           ),
         ),
@@ -240,45 +254,52 @@ class _SweepDashboardPageState extends State<SweepDashboardPage> {
     );
   }
 
-  Widget _buildSignalList() {
+  Widget _buildSignalList(UrsaColors colors) {
     if (_signals.isEmpty) return const SizedBox.shrink();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text('Completed Signals (${_signals.length})',
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+            style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: colors.textHighContrast)),
         const SizedBox(height: 8),
-        ..._signals.reversed.map((label) => _signalTile(label)),
+        ..._signals.reversed.map((label) => _signalTile(label, colors)),
       ],
     );
   }
 
-  Widget _signalTile(String label) {
+  Widget _signalTile(String label, UrsaColors colors) {
     return Card(
-      color: const Color(0xFF161B22),
+      color: colors.solidDefault,
       margin: const EdgeInsets.only(bottom: 6),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       child: ExpansionTile(
-        title: Text(label, style: const TextStyle(color: Colors.white, fontSize: 14)),
-        iconColor: Colors.grey,
-        collapsedIconColor: Colors.grey,
+        title: Text(label,
+            style:
+                TextStyle(color: colors.textHighContrast, fontSize: 14)),
+        iconColor: colors.textLowContrast,
+        collapsedIconColor: colors.textLowContrast,
         onExpansionChanged: (expanded) {
           if (expanded) _fetchSignalResult(label);
         },
         children: [
           if (_signalResults.containsKey(label))
-            ..._buildResultRows(_signalResults[label]!)
+            ..._buildResultRows(_signalResults[label]!, colors)
           else
             const Padding(
               padding: EdgeInsets.all(12),
-              child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)),
+              child:
+                  SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)),
             ),
         ],
       ),
     );
   }
 
-  List<Widget> _buildResultRows(Map<String, dynamic> result) {
+  List<Widget> _buildResultRows(
+      Map<String, dynamic> result, UrsaColors colors) {
     final entries = result.entries.take(15).toList();
     return entries.map((e) {
       final val = e.value is num ? _formatNum(e.value as num) : '${e.value}';
@@ -287,8 +308,12 @@ class _SweepDashboardPageState extends State<SweepDashboardPage> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(e.key, style: TextStyle(color: Colors.grey[400], fontSize: 12)),
-            Text(val, style: const TextStyle(color: Colors.white, fontSize: 12)),
+            Text(e.key,
+                style:
+                    TextStyle(color: colors.textLowContrast, fontSize: 12)),
+            Text(val,
+                style:
+                    const TextStyle(color: Colors.white, fontSize: 12)),
           ],
         ),
       );
@@ -366,10 +391,13 @@ class StatusChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<UrsaColors>()!;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: isRunning ? const Color(0x1F3FB950) : const Color(0x1F58A6FF),
+        color: isRunning
+            ? Colors.green.withValues(alpha: 0.12)
+            : colors.accent9.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
@@ -380,7 +408,7 @@ class StatusChip extends StatelessWidget {
             height: 8,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: isRunning ? const Color(0xFF3FB950) : const Color(0xFF58A6FF),
+              color: isRunning ? Colors.greenAccent : colors.accent9,
             ),
           ),
           const SizedBox(width: 6),
@@ -389,7 +417,7 @@ class StatusChip extends StatelessWidget {
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.bold,
-              color: isRunning ? const Color(0xFF3FB950) : const Color(0xFF58A6FF),
+              color: isRunning ? Colors.greenAccent : colors.accent9,
             ),
           ),
         ],
