@@ -130,6 +130,11 @@ class _IframeContentState extends State<IframeContent> {
       _hasError = false;
     });
 
+    // Append season as a query parameter so the child SPA reads it
+    // before its first widget build (avoids postMessage race condition).
+    final seasonParam = widget.season != null ? '?ursaSeason=${widget.season!.name}' : '';
+    final loadUrl = '$url$seasonParam';
+
     // Set callbacks BEFORE setting src so we never miss the load event
     _onIframeLoad = () {
       _sendSeasonToIframe();
@@ -140,11 +145,11 @@ class _IframeContentState extends State<IframeContent> {
     };
 
     // Store as pending in case element doesn't exist yet
-    _pendingIframeUrl = url;
+    _pendingIframeUrl = loadUrl;
 
     // If element already exists, set src now
     if (_iframeElement != null) {
-      _iframeElement!.src = url;
+      _iframeElement!.src = loadUrl;
     }
     // Otherwise the factory callback will pick up _pendingIframeUrl
   }

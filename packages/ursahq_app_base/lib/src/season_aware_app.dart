@@ -1,9 +1,15 @@
 /// SeasonAwareApp — extends [UrsaApp] with cross-frame season sync.
 ///
-/// When loaded inside the UrsaHQ launcher iframe, the parent sends
-/// `{'ursaSeason': 'winter'}` via `postMessage` on season toggle.
-/// This widget listens for those messages and dynamically rebuilds
-/// the [UrsaApp] theme with the received season.
+/// When loaded inside the UrsaHQ launcher iframe, the parent sends the
+/// season via two mechanisms to avoid race conditions:
+///
+/// 1. **Query parameter** (reliable, no race): The iframe URL includes
+///    `?ursaSeason=summer`. [SeasonAwareApp] reads this from
+///    `window.location.search` in [initState] before any widget build.
+///
+/// 2. **postMessage** (real-time updates): After the iframe loads, the
+///    launcher sends `{'ursaSeason': 'winter'}` via `postMessage` on
+///    every season toggle, keeping the child in sync without reloading.
 ///
 /// When loaded standalone (outside the launcher), it falls back to
 /// [getCurrentSeason()] (date-based auto-detection), behaving exactly
@@ -70,7 +76,27 @@ class SeasonAwareApp extends StatefulWidget {
 }
 
 class _SeasonAwareAppState extends State<SeasonAwareApp> {
-  Season _season = getCurrentSeason();
+  Season _season = _initSeason();
+
+  /// Reads the initial season from URL query param `?ursaSeason=summer`
+  /// (set by the launcher iframe parent) or falls back to [getCurrentSeason()].
+  static Season _initSeason() {
+    if (kIsWeb) {
+      try {
+        final params = Uri.base.queryParameters;
+        final name = params['ursaSeason'];
+        if (name != null) {
+          return Season.values.firstWhere(
+            (s) => s.name == name,
+            orElse: () => getCurrentSeason(),
+          );
+        }
+      } catch (_) {
+        // Ignore parse errors and fall through to date-based detection.
+      }
+    }
+    return getCurrentSeason();
+  }
 
   @override
   void initState() {
