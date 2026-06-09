@@ -258,16 +258,6 @@ List<ServiceEntry> get launcherServices => [
     type: ServiceType.thirdParty,
     category: ServiceCategory.admin,
   ),
-  const ServiceEntry(
-    id: 'adminer',
-    label: 'Adminer',
-    path: '/adminer/',
-    externalUrl: 'https://adminer.mg3.net',
-    proxyPath: 'https://adminer.mg3.net/',
-    status: ServiceStatus.unknown,
-    type: ServiceType.thirdParty,
-    category: ServiceCategory.admin,
-  ),
 
   // ═══════════════════════════════════════════════════════
   // GAMING
