@@ -205,16 +205,6 @@ List<ServiceEntry> get launcherServices => [
     type: ServiceType.thirdParty,
     category: ServiceCategory.ai,
   ),
-  const ServiceEntry(
-    id: 'obsidian',
-    label: 'Obsidian',
-    path: '/obsidian/',
-    externalUrl: 'https://obsidian.mg3.net',
-    proxyPath: 'https://obsidian.mg3.net/',
-    status: ServiceStatus.unknown,
-    type: ServiceType.thirdParty,
-    category: ServiceCategory.ai,
-  ),
 
   // ═══════════════════════════════════════════════════════
   // DOCUMENTATION & STORAGE
