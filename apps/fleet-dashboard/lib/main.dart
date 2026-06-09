@@ -246,7 +246,7 @@ class AgentDetail {
 // ── API Service ──────────────────────────────────────────────────
 
 class FleetApi {
-  static const _base = '/api/fleet';
+  static const _base = '/_p/fleet/api/fleet';
 
   static Future<FleetStatus> getStatus() async {
     final res = await http.get(Uri.parse('$_base/status'));
