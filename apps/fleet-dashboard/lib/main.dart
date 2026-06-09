@@ -1,4 +1,5 @@
 /// Fleet Dashboard — real-time Hermes agent monitoring.
+/// Uses SeasonAwareApp for seasonal dark theme + launcher cross-frame sync.
 library;
 
 import 'dart:async';
@@ -6,6 +7,9 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+
+import 'package:ursahq_app_base/ursahq_app_base.dart';
+import 'package:ursahq_design_system/ursahq_design_system.dart';
 
 // ── Data Models ──────────────────────────────────────────────────
 
@@ -264,18 +268,9 @@ class FleetDashboardApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return const SeasonAwareApp(
       title: 'Fleet Dashboard',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData.dark().copyWith(
-        scaffoldBackgroundColor: const Color(0xFF0D1117),
-        cardColor: const Color(0xFF161B22),
-        colorScheme: const ColorScheme.dark(
-          primary: Color(0xFF58A6FF),
-          secondary: Color(0xFF3FB950),
-        ),
-      ),
-      home: const FleetPage(),
+      home: FleetPage(),
     );
   }
 }
@@ -327,8 +322,9 @@ class _FleetPageState extends State<FleetPage> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<UrsaColors>()!;
     return Scaffold(
-      backgroundColor: const Color(0xFF0D1117),
+      backgroundColor: colors.backgroundCanvas,
       appBar: AppBar(
         title: const Text('Fleet Dashboard'),
         backgroundColor: Colors.transparent,
@@ -336,7 +332,7 @@ class _FleetPageState extends State<FleetPage> {
         actions: [
           if (_status != null)
             Text('${_status!.agents.length} agents',
-                style: TextStyle(color: Colors.grey[400], fontSize: 14)),
+                style: TextStyle(color: colors.textLowContrast, fontSize: 14)),
           IconButton(
             icon: const Icon(Icons.refresh, color: Colors.grey),
             onPressed: _fetch,
@@ -345,12 +341,12 @@ class _FleetPageState extends State<FleetPage> {
       ),
       body: RefreshIndicator(
         onRefresh: _fetch,
-        child: _buildBody(),
+        child: _buildBody(colors),
       ),
     );
   }
 
-  Widget _buildBody() {
+  Widget _buildBody(UrsaColors colors) {
     if (_error) {
       return Center(
         child: Column(
@@ -360,7 +356,7 @@ class _FleetPageState extends State<FleetPage> {
             const SizedBox(height: 16),
             Text('API unreachable\n$_errorMsg',
                 textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.grey[400])),
+                style: TextStyle(color: colors.textLowContrast)),
           ],
         ),
       );
@@ -391,45 +387,45 @@ class _FleetPageState extends State<FleetPage> {
         const SizedBox(height: 16),
 
         // Systems section
-        _sectionHeader('System Status'),
+        _sectionHeader(colors, 'System Status'),
         const SizedBox(height: 8),
-        _buildSystemCards(),
+        _buildSystemCards(colors),
 
         const SizedBox(height: 16),
 
         if (_status!.systems.git.isNotEmpty) ...[
-          _sectionHeader('Git Repos'),
+          _sectionHeader(colors, 'Git Repos'),
           const SizedBox(height: 8),
-          ..._status!.systems.git.map((g) => _GitCard(g)),
+          ..._status!.systems.git.map((g) => _GitCard(g, colors)),
         ],
       ],
     );
   }
 
-  Widget _sectionHeader(String title) {
+  Widget _sectionHeader(UrsaColors colors, String title) {
     return Text(title,
-        style: const TextStyle(
-            fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white));
+        style: TextStyle(
+            fontSize: 16, fontWeight: FontWeight.bold, color: colors.textHighContrast));
   }
 
-  Widget _buildSystemCards() {
+  Widget _buildSystemCards(UrsaColors colors) {
     final s = _status!.systems;
     return Wrap(
       spacing: 8,
       runSpacing: 8,
       children: [
-        _systemChip('Containers', '${s.containers.length}', Icons.dns, Colors.blueAccent),
-        _systemChip('GPU', '${s.gpu.length}', Icons.memory, Colors.greenAccent),
-        _systemChip('Drift Events', '${s.drift.length}', Icons.trending_up, Colors.amberAccent),
+        _systemChip(colors, 'Containers', '${s.containers.length}', Icons.dns, colors.accent9),
+        _systemChip(colors, 'GPU', '${s.gpu.length}', Icons.memory, const Color(0xFF3FB950)),
+        _systemChip(colors, 'Drift Events', '${s.drift.length}', Icons.trending_up, Colors.amberAccent),
       ],
     );
   }
 
-  Widget _systemChip(String label, String value, IconData icon, Color color) {
+  Widget _systemChip(UrsaColors colors, String label, String value, IconData icon, Color color) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
-        color: const Color(0xFF161B22),
+        color: colors.backgroundSubtle,
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
@@ -446,7 +442,7 @@ class _FleetPageState extends State<FleetPage> {
                       fontWeight: FontWeight.bold,
                       color: color)),
               Text(label,
-                  style: TextStyle(fontSize: 11, color: Colors.grey[500])),
+                  style: TextStyle(fontSize: 11, color: colors.textLowContrast)),
             ],
           ),
         ],
@@ -472,12 +468,13 @@ class _AgentCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<UrsaColors>()!;
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: const Color(0xFF161B22),
+          color: colors.backgroundSubtle,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: agent.healthColor.withValues(alpha: 0.3),
@@ -501,10 +498,10 @@ class _AgentCard extends StatelessWidget {
                 Expanded(
                   child: Text(
                     agent.name,
-                    style: const TextStyle(
+                    style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white),
+                        color: colors.textHighContrast),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
@@ -513,14 +510,14 @@ class _AgentCard extends StatelessWidget {
             const SizedBox(height: 8),
             if (agent.config != null)
               Text(agent.config!.model,
-                  style: TextStyle(fontSize: 11, color: Colors.grey[400])),
+                  style: TextStyle(fontSize: 11, color: colors.textLowContrast)),
             const Spacer(),
             Row(
               children: [
                 if (agent.container.running)
                   Text(
                     '${agent.container.cpuPercent.toStringAsFixed(1)}% CPU',
-                    style: TextStyle(fontSize: 10, color: Colors.grey[500]),
+                    style: TextStyle(fontSize: 10, color: colors.textLowContrast),
                   ),
                 const Spacer(),
                 Text(
@@ -570,72 +567,73 @@ class _AgentDetailPageState extends State<AgentDetailPage> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<UrsaColors>()!;
     return Scaffold(
-      backgroundColor: const Color(0xFF0D1117),
+      backgroundColor: colors.backgroundCanvas,
       appBar: AppBar(
         title: Text(widget.agentName,
-            style: const TextStyle(fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.transparent,
+            style: TextStyle(fontWeight: FontWeight.bold, color: colors.textHighContrast)),
+        backgroundColor: colors.backgroundSubtle,
         elevation: 0,
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _detail == null
-              ? const Center(child: Text('Failed to load'))
+              ? Center(child: Text('Failed to load', style: TextStyle(color: colors.textLowContrast)))
               : ListView(
                   padding: const EdgeInsets.all(12),
                   children: [
                     // Status banner
-                    _infoRow('State', _detail!.agent.healthLabel,
+                    _infoRow(colors, 'State', _detail!.agent.healthLabel,
                         color: _detail!.agent.healthColor),
-                    _infoRow('Container',
+                    _infoRow(colors, 'Container',
                         _detail!.agent.container.status),
-                    _infoRow('Uptime',
+                    _infoRow(colors, 'Uptime',
                         _detail!.agent.container.uptimeFormatted),
-                    _infoRow('CPU',
+                    _infoRow(colors, 'CPU',
                         '${_detail!.agent.container.cpuPercent.toStringAsFixed(1)}%'),
-                    _infoRow('Memory',
+                    _infoRow(colors, 'Memory',
                         _detail!.agent.container.memFormatted),
-                    _infoRow('Restarts',
+                    _infoRow(colors, 'Restarts',
                         '${_detail!.agent.container.restartCount}'),
                     const SizedBox(height: 12),
 
                     // Sessions 24h
                     Text('Sessions Today',
-                        style: const TextStyle(
+                        style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
-                            color: Colors.white)),
+                            color: colors.textHighContrast)),
                     const SizedBox(height: 8),
                     if (_detail!.recentSessions.isEmpty)
                       Text('No sessions',
-                          style: TextStyle(color: Colors.grey[500]))
+                          style: TextStyle(color: colors.textLowContrast))
                     else
                       ..._detail!.recentSessions
                           .take(20)
-                          .map((s) => _SessionRow(s)),
+                          .map((s) => _SessionRow(s, colors)),
                     const SizedBox(height: 12),
 
                     // Config
                     if (_detail!.configYaml != null) ...[
                       Text('Config',
-                          style: const TextStyle(
+                          style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
-                              color: Colors.white)),
+                              color: colors.textHighContrast)),
                       const SizedBox(height: 8),
                       Container(
                         width: double.infinity,
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF0D1117),
+                          color: colors.backgroundCanvas,
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: SelectableText(
                           _detail!.configYaml!,
                           style: TextStyle(
                               fontSize: 11,
-                              color: Colors.grey[300],
+                              color: colors.textLowContrast,
                               fontFamily: 'monospace'),
                         ),
                       ),
@@ -645,7 +643,7 @@ class _AgentDetailPageState extends State<AgentDetailPage> {
     );
   }
 
-  Widget _infoRow(String label, String value, {Color? color}) {
+  Widget _infoRow(UrsaColors colors, String label, String value, {Color? color}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
@@ -653,11 +651,11 @@ class _AgentDetailPageState extends State<AgentDetailPage> {
           SizedBox(
               width: 100,
               child: Text(label,
-                  style: TextStyle(color: Colors.grey[500], fontSize: 13))),
+                  style: TextStyle(color: colors.textLowContrast, fontSize: 13))),
           Expanded(
             child: Text(value,
                 style: TextStyle(
-                    color: color ?? Colors.white,
+                    color: color ?? colors.textHighContrast,
                     fontSize: 13,
                     fontWeight: FontWeight.w500)),
           ),
@@ -671,7 +669,8 @@ class _AgentDetailPageState extends State<AgentDetailPage> {
 
 class _SessionRow extends StatelessWidget {
   final SessionSummary session;
-  const _SessionRow(this.session);
+  final UrsaColors colors;
+  const _SessionRow(this.session, this.colors);
 
   @override
   Widget build(BuildContext context) {
@@ -682,7 +681,7 @@ class _SessionRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
       margin: const EdgeInsets.only(bottom: 4),
       decoration: BoxDecoration(
-        color: const Color(0xFF161B22),
+        color: colors.backgroundSubtle,
         borderRadius: BorderRadius.circular(6),
       ),
       child: Row(
@@ -693,19 +692,19 @@ class _SessionRow extends StatelessWidget {
               children: [
                 Text(
                   session.title ?? session.sessionId,
-                  style: const TextStyle(
-                      fontSize: 12, color: Colors.white),
+                  style: TextStyle(
+                      fontSize: 12, color: colors.textHighContrast),
                   overflow: TextOverflow.ellipsis,
                 ),
                 Text(
                   '${session.messageCount} msgs • \$${session.estimatedCost.toStringAsFixed(4)}',
-                  style: TextStyle(fontSize: 10, color: Colors.grey[500]),
+                  style: TextStyle(fontSize: 10, color: colors.textLowContrast),
                 ),
               ],
             ),
           ),
           Text(durStr,
-              style: TextStyle(fontSize: 11, color: Colors.grey[400])),
+              style: TextStyle(fontSize: 11, color: colors.textLowContrast)),
         ],
       ),
     );
@@ -716,7 +715,8 @@ class _SessionRow extends StatelessWidget {
 
 class _GitCard extends StatelessWidget {
   final dynamic git;
-  const _GitCard(this.git);
+  final UrsaColors colors;
+  const _GitCard(this.git, this.colors);
 
   @override
   Widget build(BuildContext context) {
@@ -724,7 +724,7 @@ class _GitCard extends StatelessWidget {
       padding: const EdgeInsets.all(10),
       margin: const EdgeInsets.only(bottom: 4),
       decoration: BoxDecoration(
-        color: const Color(0xFF161B22),
+        color: colors.backgroundSubtle,
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
@@ -736,12 +736,12 @@ class _GitCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text('${git['repo']} (${git['branch']})',
-                    style: const TextStyle(
+                    style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
-                        color: Colors.white)),
+                        color: colors.textHighContrast)),
                 Text('${git['last_commit_msg']}',
-                    style: TextStyle(fontSize: 11, color: Colors.grey[400]),
+                    style: TextStyle(fontSize: 11, color: colors.textLowContrast),
                     overflow: TextOverflow.ellipsis),
               ],
             ),
